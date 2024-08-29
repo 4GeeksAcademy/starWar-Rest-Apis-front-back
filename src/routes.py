@@ -144,3 +144,203 @@ def newCharacter():
     db.session.commit()
 
     return jsonify(character.serialize()), 201
+
+    # Buscar el personaje por ID
+@api.route('/characters/<int:character_id>', methods=['PUT'])
+def editCharacter(character_id):
+    character = Character.query.filter_by(id=character_id).first()
+
+    
+    if not character:
+        return jsonify({"msg": "Character not found"}), 404
+
+    
+    body = request.get_json()
+
+    if not body:
+        return jsonify({"msg": "Missing JSON body"}), 400
+
+    
+    character.name = body.get('name', character.name)
+    character.gender = body.get('gender', character.gender)
+    character.eyeColor = body.get('eyeColor', character.eyeColor)
+    character.description = body.get('description', character.description)
+    character.imageUrl = body.get('imageUrl', character.imageUrl)
+    character.planetId = body.get('planetId', character.planetId)
+
+    
+    db.session.commit()
+
+    
+    return jsonify({"msg": "Character has been edited successfully", "character": character.serialize()}), 200
+
+    # Delete Character
+
+@api.route('/characters/<int:character_id>', methods=['DELETE'])
+def deleteCharacter(characterId):
+    character=Character.query.filter_by(id = characterId).first()
+    if not character:
+        return jsonify({"msg": "Character not found"}), 404
+    serialized_character = character.serialize()
+    db.session.delete(character)
+    db.session.commit()
+
+    return jsonify('Character has been deleted successfully', serialized_character), 200
+
+    # Planets
+
+@api.route('/planets', methods=['GET'])
+def getPlanets():
+    planets=Planet.query.all()
+    serialized_planets = list([planet.serialize() for planet in planets])
+    if not planets:
+        return jsonify("No planets found", status_code=404)
+    else:
+        return jsonify(serialized_planets), 200
+    
+@api.route('/planets/<int:planet_id>', methods=['GET'])
+def getPlanet(planetId):
+    planet = Planet.query.get(planetId)
+    if not planet:
+        return jsonify("Character not found", status_code=404)
+    else:
+        return jsonify(planet.serialize()), 200
+    
+@api.route('/planets', methods=['POST'])
+def planetPost():
+    body = request.get_json()
+    if not body:
+        return jsonify("Request body is empty", status_code=400)
+    
+    planet=Planet()
+    planet.name = body.get('name')
+    planet.population=body.get('population')
+    planet.climate=body.get('climate')
+    planet.diameter=body.get('diameter')
+    planet.description=body.get('description')
+    planet.imageUrl=body.get('imageUrl')
+
+
+    if not planet.name:
+        return jsonify("Name is required", status_code=400)
+    if not planet.population:
+        return jsonify("Population is required", status_code=400)
+    if not planet.climate:
+        return jsonify("Climate is required", status_code=400)
+    if not planet.diameter:
+        return jsonify("Diameter is required", status_code=400)
+   
+  
+    
+    db.session.add(planet)
+    db.session.commit()
+    return jsonify(planet.serialize()), 201
+
+@api.route('/planets/<int:planet_id>', methods=['PUT'])
+def editPlanet(planetId):
+    planet=Planet.query.filter_by(id = planetId).first()
+    if not planet:
+        return jsonify("Planet not found", status_code=404)
+    
+    body= request.get_json()
+    if not body:
+        return jsonify("Request body is empty", status_code=400)
+
+    planet.name = body.get('name', planet.name)
+    planet.population=body.get('population', planet.population)
+    planet.climate=body.get('climate', planet.climate)
+    planet.diameter=body.get('diameter', planet.diameter)
+    
+
+    db.session.commit()
+
+    return jsonify('Planet has been edit successfully',planet.serialize()), 200
+
+@api.route('/planets/<int:planet_id>', methods=['DELETE'])
+def deletePlanet(planetId):
+    planet=Planet.query.filter_by(id = planetId).first()
+    print(planet)
+    if not planet:
+        return jsonify("Planet not found", status_code=404)
+
+    db.session.delete(planet)
+    db.session.commit()
+
+    return jsonify('Planet has been deleted successfully',planet.serialize()), 200
+
+    # Vehicles
+
+@api.route('/vehicles/<int:vehicle_id>', methods=['GET'])
+def getVehicle(vehicleId):
+    vehicle = Vehicle.query.get(vehicleId)
+    if not vehicle:
+        return jsonify("Vehicle not found", status_code=404)
+    else:
+        return jsonify(vehicle.serialize()), 200
+
+@api.route('/vehicles', methods=['POST'])
+def vehiclePost():
+    body = request.get_json()
+    if not body:
+        return jsonify("Request body is empty", status_code=400)
+    
+    vehicle=Vehicle()
+    vehicle.name = body.get('name')
+    vehicle.model=body.get('model')
+    vehicle.vehicleClass=body.get('vehicleClass')
+    vehicle.length=body.get('length')
+    vehicle.description=body.get('description')
+    vehicle.imageUrl=body.get('imageUrl')
+    vehicle.pilotId=body.get('pilotId')
+
+    if not vehicle.name:
+        return jsonify("Name is required", status_code=400)
+    if not vehicle.model:
+        return jsonify("Model is required", status_code=400)
+    if not vehicle.vehicleClass:
+        return jsonify("Vehicle class is required", status_code=400)
+    if not vehicle.length:
+        return jsonify("Length is required", status_code=400)
+    if not vehicle.pilotId:
+        return jsonify("Pilot ID is required", status_code=400)
+    
+    db.session.add(vehicle)
+    db.session.commit()
+    return jsonify(vehicle.serialize()), 201
+
+@api.route('/vehicles/<int:vehicle_id>', methods=['PUT'])
+def editVehicle(vehicle_id):
+    vehicle=Vehicle.query.filter_by(id = vehicle_id).first()
+    if not vehicle:
+        return jsonify("Vehicle not found", status_code=404)
+    
+    body= request.get_json()
+    if not body:
+        return jsonify("Request body is empty", status_code=400)
+
+    vehicle.name = body.get('name', vehicle.name)
+    vehicle.model=body.get('model', vehicle.model)
+    vehicle.vehicleClass=body.get('vehicleClass', vehicle.vehicleClass)
+    vehicle.length=body.get('length', vehicle.length)
+    vehicle.description=body.get('description', vehicle.description)
+    vehicle.imageUrl=body.get('imageUrl', vehicle.imageUrl)
+    vehicle.pilotId=body.get('pilotId', vehicle.pilotId)
+
+    db.session.commit()
+    
+    return jsonify('Planet has been edit successfully',vehicle.serialize()), 200
+
+@api.route('/vehicles/<int:vehicle_id>', methods=['DELETE'])
+def deleteVehicle(vehicle_id):
+    vehicle=Vehicle.query.filter_by(id = vehicle_id).first()
+    if not vehicle:
+        return jsonify("Vehicle not found", status_code=404)
+    serialized_vehicle= vehicle.serialize()
+    db.session.delete(vehicle)
+    db.session.commit()
+
+    return jsonify('Vehicle has been deleted successfully', serialized_vehicle), 200  
+   
+    
+
+    
